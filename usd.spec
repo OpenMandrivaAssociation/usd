@@ -49,6 +49,8 @@ BuildRequires:	cmake(Imath)
 BuildRequires:	pkgconfig(python)
 BuildRequires:	pkgconfig(gl)
 BuildRequires:	pkgconfig(x11)
+# OpenSubdiv's GPU lib is built with OpenCL; ninja needs the .so at link time.
+BuildRequires:	pkgconfig(OpenCL)
 BuildRequires:	python%{pyver}dist(jinja2)
 
 # cmake.req sees find_dependency(MaterialX) in pxrConfig.cmake even
