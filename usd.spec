@@ -51,8 +51,8 @@ BuildRequires:	pkgconfig(gl)
 BuildRequires:	pkgconfig(x11)
 # OpenSubdiv's GPU lib is built with OpenCL; ninja needs the .so at link time.
 BuildRequires:	pkgconfig(OpenCL)
-# pxr/base/arch/stackTrace.cpp includes <unwind.h>
-BuildRequires:	pkgconfig(libunwind)
+# pxr/base/arch/stackTrace.cpp includes <unwind.h> (LLVM libunwind, not nongnu).
+BuildRequires:	pkgconfig(libunwind-llvm)
 BuildRequires:	python%{pyver}dist(jinja2)
 
 # cmake.req sees find_dependency(MaterialX) in pxrConfig.cmake even
