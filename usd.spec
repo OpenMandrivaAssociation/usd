@@ -4,7 +4,7 @@
 Summary:	Universal Scene Description (OpenUSD)
 Name:		usd
 Version:	26.03
-Release:	1
+Release:	2
 Group:		Graphics
 License:	TOST-1.0
 URL:		https://openusd.org/
@@ -28,7 +28,7 @@ BuildOption:	-DPXR_BUILD_EMBREE_PLUGIN:BOOL=OFF
 BuildOption:	-DPXR_BUILD_PRMAN_PLUGIN:BOOL=OFF
 BuildOption:	-DPXR_BUILD_OPENIMAGEIO_PLUGIN:BOOL=ON
 BuildOption:	-DPXR_BUILD_OPENCOLORIO_PLUGIN:BOOL=ON
-BuildOption:	-DPXR_ENABLE_MATERIALX_SUPPORT:BOOL=OFF
+BuildOption:	-DPXR_ENABLE_MATERIALX_SUPPORT:BOOL=ON
 BuildOption:	-DPXR_ENABLE_OPENVDB_SUPPORT:BOOL=OFF
 BuildOption:	-DPXR_ENABLE_OSL_SUPPORT:BOOL=OFF
 BuildOption:	-DPXR_ENABLE_PTEX_SUPPORT:BOOL=OFF
@@ -45,6 +45,9 @@ BuildRequires:	pkgconfig(tbb)
 BuildRequires:	cmake(OpenSubdiv)
 BuildRequires:	cmake(OpenImageIO)
 BuildRequires:	cmake(OpenColorIO)
+BuildRequires:	cmake(MaterialX)
+BuildRequires:	materialx-data
+BuildRequires:	python-materialx
 BuildRequires:	cmake(Imath)
 BuildRequires:	pkgconfig(python)
 BuildRequires:	pkgconfig(gl)
@@ -54,10 +57,6 @@ BuildRequires:	pkgconfig(OpenCL)
 # pxr/base/arch/stackTrace.cpp includes <unwind.h> (LLVM libunwind, not nongnu).
 BuildRequires:	pkgconfig(libunwind-llvm)
 BuildRequires:	python%{pyver}dist(jinja2)
-
-# cmake.req sees find_dependency(MaterialX) in pxrConfig.cmake even
-# though that branch is off (PXR_ENABLE_MATERIALX_SUPPORT=OFF).
-%global __requires_exclude %{?__requires_exclude}%{?__requires_exclude:|}^\\(cmake\\(materialx\\) or cmake\\(MaterialX\\)\\)$
 
 Requires:	%{libname} = %{EVRD}
 # Most CLI tools are Python scripts that import pxr.
