@@ -3,8 +3,8 @@
 
 Summary:	Universal Scene Description (OpenUSD)
 Name:		usd
-Version:	26.03
-Release:	2
+Version:	26.08
+Release:	1
 Group:		Graphics
 License:	TOST-1.0
 URL:		https://openusd.org/
@@ -38,6 +38,7 @@ BuildOption:	-DPXR_ENABLE_MALLOCHOOK_SUPPORT:BOOL=OFF
 BuildOption:	-DPXR_VALIDATE_GENERATED_CODE:BOOL=OFF
 BuildOption:	-DPYTHON_EXECUTABLE=/usr/bin/python
 BuildOption:	-DPython3_EXECUTABLE=/usr/bin/python
+BuildOption:	-DPXR_PYTHON_INSTALL_DIR=%{python_sitelib}
 BuildOption:	-DPXR_ENABLE_GL_SUPPORT:BOOL=ON
 BuildOption:	-DCMAKE_CXX_STANDARD=17
 
@@ -49,7 +50,7 @@ BuildRequires:	cmake(MaterialX)
 BuildRequires:	materialx-data
 BuildRequires:	python-materialx
 BuildRequires:	cmake(Imath)
-BuildRequires:	pkgconfig(python)
+BuildRequires:	pkgconfig(python3)
 BuildRequires:	pkgconfig(gl)
 BuildRequires:	pkgconfig(x11)
 # OpenSubdiv's GPU lib is built with OpenCL; ninja needs the .so at link time.
@@ -68,9 +69,8 @@ description for interchange between graphics applications. Hydra is the
 imaging framework shipped in the same tree. Blender uses this for USD
 import/export and Hydra 2.0.
 
-This build is the 26.03 release Blender 5.2 LTS was developed against,
-as a shared monolithic library (libusd_ms) so Blender's FindUSD module
-can locate it.
+This build is the 26.08 release, as a shared monolithic library
+(libusd_ms) so Blender's FindUSD module can locate it.
 
 %package -n %{libname}
 Summary:	Shared OpenUSD/Hydra library
@@ -109,9 +109,6 @@ if [ "%{_libdir}" != "%{_prefix}/lib" ]; then
 	mv %{buildroot}%{_prefix}/lib/libusd_ms.so %{buildroot}%{_libdir}/
 	mv %{buildroot}%{_prefix}/lib/usd %{buildroot}%{_libdir}/
 fi
-# OpenUSD hardcodes lib/python/pxr (not the distro site-packages).
-mkdir -p %{buildroot}%{python_sitelib}
-echo '%{_prefix}/lib/python' > %{buildroot}%{python_sitelib}/usd.pth
 # CMake config lands in /usr/pxrConfig.cmake + /usr/cmake/; relocate
 # so find_package(pxr) works, then fix the generated prefix walks.
 mkdir -p %{buildroot}%{_libdir}/cmake/pxr
@@ -214,8 +211,7 @@ EOF
 %{_libdir}/cmake/pxr/
 
 %files python
-%{python_sitelib}/usd.pth
-%{_prefix}/lib/python/pxr/
+%{python_sitelib}/pxr/
 
 %files
 %{_bindir}/usd*
