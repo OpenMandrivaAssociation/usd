@@ -12,7 +12,7 @@ diff -uNr a/pxr/base/tf/pyFunction.h b/pxr/base/tf/pyFunction.h
 +                TF_WARN("Tried to call an expired python callback");
 +                return Ret();
 +            }
-+            object callable(handle<>(raw));
++            object callable((handle<>(raw)));
 +#else
              object callable(handle<>(borrowed(PyWeakref_GetObject(weak.ptr()))));
              if (TfPyIsNone(callable)) {
