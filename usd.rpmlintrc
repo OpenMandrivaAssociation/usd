@@ -1,0 +1,2 @@
+# OpenUSD installs into /usr/lib. The spec moves the 64-bit library afterward.
+addFilter("E: hardcoded-library-path")

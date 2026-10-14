@@ -1,0 +1,98 @@
+diff -uNr a/pxr/base/tf/pyFunction.h b/pxr/base/tf/pyFunction.h
+--- a/pxr/base/tf/pyFunction.h	2026-07-17 22:41:06.000000000 +0200
++++ b/pxr/base/tf/pyFunction.h	2026-10-14 15:34:09.633524639 +0200
+@@ -49,11 +49,21 @@
+             using namespace pxr_boost::python;
+             // Attempt to get the referenced callable object.
+             TfPyLock lock;
++#if PY_VERSION_HEX >= 0x030D0000
++            PyObject *raw = nullptr;
++            if (PyWeakref_GetRef(weak.ptr(), &raw) != 1) {
++                PyErr_Clear();
++                TF_WARN("Tried to call an expired python callback");
++                return Ret();
++            }
++            object callable(handle<>(raw));
++#else
+             object callable(handle<>(borrowed(PyWeakref_GetObject(weak.ptr()))));
+             if (TfPyIsNone(callable)) {
+                 TF_WARN("Tried to call an expired python callback");
+                 return Ret();
+             }
++#endif
+             return TfPyCall<Ret>(callable)(args...);
+         }
+     };
+@@ -68,12 +78,23 @@
+             // Attempt to get the referenced self parameter, then build a new
+             // instance method and call it.
+             TfPyLock lock;
++#if PY_VERSION_HEX >= 0x030D0000
++            PyObject *self = nullptr;
++            if (PyWeakref_GetRef(weakSelf.ptr(), &self) != 1) {
++                PyErr_Clear();
++                TF_WARN("Tried to call a method on an expired python instance");
++                return Ret();
++            }
++            object method(handle<>(PyMethod_New(func.ptr(), self)));
++            Py_DECREF(self);
++#else
+             PyObject *self = PyWeakref_GetObject(weakSelf.ptr());
+             if (self == Py_None) {
+                 TF_WARN("Tried to call a method on an expired python instance");
+                 return Ret();
+             }
+             object method(handle<>(PyMethod_New(func.ptr(), self)));
++#endif
+             return TfPyCall<Ret>(method)(args...);
+         }
+     };
+diff -uNr a/pxr/base/tf/pyIdentity.cpp b/pxr/base/tf/pyIdentity.cpp
+--- a/pxr/base/tf/pyIdentity.cpp	2026-07-17 22:41:06.000000000 +0200
++++ b/pxr/base/tf/pyIdentity.cpp	2026-10-14 15:34:09.633426877 +0200
+@@ -136,7 +136,22 @@
+ Tf_PyIdHandle::Ptr() const {
+     if (_weakRef) {
+         TfPyLock lock;
++#if PY_VERSION_HEX >= 0x030D0000
++        // PyWeakref_GetObject() was removed. Keep its borrowed-reference
++        // result: the live object, or Py_None when the referent is dead.
++        PyObject *obj = nullptr;
++        int rv = PyWeakref_GetRef(_weakRef, &obj);
++        if (rv < 0) {
++            return nullptr;
++        }
++        if (rv == 0) {
++            return Py_None;
++        }
++        Py_DECREF(obj);
++        return obj;
++#else
+         return PyWeakref_GetObject(_weakRef);
++#endif
+     }
+     return 0;
+ }
+diff -uNr a/pxr/base/tf/pyWeakObject.cpp b/pxr/base/tf/pyWeakObject.cpp
+--- a/pxr/base/tf/pyWeakObject.cpp	2026-07-17 22:41:06.000000000 +0200
++++ b/pxr/base/tf/pyWeakObject.cpp	2026-10-14 15:34:09.633477648 +0200
+@@ -115,9 +115,19 @@
+ pxr_boost::python::object
+ Tf_PyWeakObject::GetObject() const
+ {
++#if PY_VERSION_HEX >= 0x030D0000
++    PyObject *obj = nullptr;
++    int rv = PyWeakref_GetRef(_weakRef.get(), &obj);
++    if (rv != 1) {
++        PyErr_Clear();
++        return pxr_boost::python::object();
++    }
++    return pxr_boost::python::object(pxr_boost::python::handle<>(obj));
++#else
+     return pxr_boost::python::object
+         (pxr_boost::python::handle<>
+          (pxr_boost::python::borrowed(PyWeakref_GetObject(_weakRef.get()))));
++#endif
+ }
+ 
+ void

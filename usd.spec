@@ -9,6 +9,8 @@ Group:		Graphics
 License:	TOST-1.0
 URL:		https://openusd.org/
 Source0:	https://github.com/PixarAnimationStudios/OpenUSD/archive/v%{version}/OpenUSD-%{version}.tar.gz
+Source100:	%{name}.rpmlintrc
+Patch0:		usd-26.08-pyweakref.patch
 
 BuildSystem:	cmake
 BuildOption:	-DBUILD_SHARED_LIBS:BOOL=ON
